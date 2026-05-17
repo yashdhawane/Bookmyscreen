@@ -6,10 +6,14 @@
   "scripts": {
     "dev": "nodemon",
     "build": "tsc",
-    "start": "node dist/server.ts",
-    "seed:theaters": "ts-node src/scripts/seed-theaters.ts",
-    "seed:movies": "ts-node src/scripts/seed-movies.ts",
-    "seed:shows": "ts-node src/scripts/seed-shows.ts"
+    "start": "node dist/server.js",
+    "seed:movies": "node dist/scripts/seed-movies.js",
+    "seed:shows": "node dist/scripts/seed-shows.js",
+    "seed:theaters": "node dist/scripts/seed-theaters.js",
+    "seed": "npm run seed:movies && npm run seed:theaters && npm run seed:shows",
+    "start:prod": "npm run seed && npm start"
+
+    
   },
   "author": "ProgrammingWithAmrit",
   "license": "ISC",

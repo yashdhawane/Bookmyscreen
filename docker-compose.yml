@@ -1,36 +1,10 @@
-# version: '3.8'
-# services:
-#   mongo:
-#     image: mongo:6
-#     command: --replSet rs0 --bind_ip_all
-#     ports:
-#       - "27017:27017"
-#     healthcheck:
-#       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-#       interval: 10s
-#       timeout: 10s
-#       retries: 5
-
-#   mongo-init:
-#     image: mongo:6
-#     depends_on:
-#       mongo:
-#         condition: service_healthy
-#     command: >
-#       mongosh --host mongo:27017 --eval
-#       'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]})'
-
 version: '3.8'
-
 services:
   mongo:
     image: mongo:6
     command: --replSet rs0 --bind_ip_all
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
     volumes:
       - mongo_data:/data/db
     healthcheck:
@@ -44,9 +18,13 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-    command: >
-      mongosh --host mongo:27017 --eval
-      'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]})'
+    entrypoint:
+    - /bin/sh
+    - -c
+    - |
+      sleep 5
+      mongosh --host mongo:27017 \
+        --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]})' || true
 
   redis:
     image: redis:7-alpine
@@ -60,17 +38,94 @@ services:
     ports:
       - "9000:9000"
     depends_on:
-      mongo-init:
-        condition: service_completed_successfully
+      mongo:
+        condition: service_healthy
       redis:
         condition: service_started
     environment:
-      NODE_ENV: production
-      MONGO_URI: mongodb://admin:password123@mongo:27017/bms?authSource=admin&replicaSet=rs0
-      REDIS_URL: redis://redis:6379
-      PORT: 5000
+      PORT: 9000
+      NODE_ENV: development
+      MONGO_REPLICA_STRING: mongodb://mongo:27017/bookmyscreen?replicaSet=rs0&directConnection=true
+      HASH_SECRET: bookmyscreen123
+      ACCESS_TOKEN_SECRET: secret_key
+      REFRESH_TOKEN_SECRET: secret_key_for_refresh
+      EMAIL_USERNAME: yashdhawane17@gmail.com
+      EMAIL_PASSWORD: pfrf gmzg djqc yass
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      RAZORPAY_API_KEY: rzp_test_SpCxCRmFwhSBJg
+      RAZORPAY_SECRET_KEY: i2Mhiwbf7JWptq18RxRJeA2F
     restart: always
 
 volumes:
-  mongo_data:
   redis_data:
+  mongo_data:
+
+# version: '3.8'
+
+# services:
+#   mongo:
+#     image: mongo:6
+#     command: --replSet rs0 --bind_ip_all
+#     ports:
+#       - "27017:27017"
+#     environment:
+#       MONGO_INITDB_ROOT_USERNAME: admin
+#       MONGO_INITDB_ROOT_PASSWORD: password123
+#     volumes:
+#       - mongo_data:/data/db
+#     healthcheck:
+#       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+#       interval: 10s
+#       timeout: 10s
+#       retries: 5
+
+#   mongo-init:
+#     image: mongo:6
+#     depends_on:
+#       mongo:
+#         condition: service_healthy
+#     command: >
+#       mongosh --host mongo:27017 
+#       --username admin 
+#       --password password123 
+#       --authenticationDatabase admin
+#       --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]})'
+
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redis_data:/data
+
+#   backend:
+#     build: ./bms-backend
+#     ports:
+#       - "9000:9000"
+#     depends_on:
+#       mongo-init:
+#         condition: service_completed_successfully
+#       redis:
+#         condition: service_started
+#     environment:
+#       PORT: 9000
+#       NODE_ENV: development
+#       MONGO_CONNECTION_STRING: mongodb://admin:password123@mongo:27017/bms?authSource=admin&replicaSet=rs0
+#       MONGO_REPLICA_STRING: mongodb://admin:password123@mongo:27017/bms?authSource=admin&replicaSet=rs0
+#       HASH_SECRET: bookmyscreen123
+#       ACCESS_TOKEN_SECRET: secret_key
+#       REFRESH_TOKEN_SECRET: secret_key_for_refresh
+#       EMAIL_USERNAME: yashdhawane17@gmail.com
+#       EMAIL_PASSWORD: pfrf gmzg djqc yass
+#       REDIS_HOST: redis
+#       REDIS_PORT: 6379
+#       REDIS_PASSWORD: ""
+#       RAZORPAY_API_KEY: rzp_test_SpCxCRmFwhSBJg
+#       RAZORPAY_SECRET_KEY: i2Mhiwbf7JWptq18RxRJeA2F
+#     restart: always
+
+# volumes:
+#   mongo_data:
+#   redis_data:
