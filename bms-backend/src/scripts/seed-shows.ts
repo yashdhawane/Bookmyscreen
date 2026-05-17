@@ -1,9 +1,9 @@
 // seed/showSeeder.ts
 import mongoose from "mongoose";
 import dayjs from "dayjs";
-import { MovieModel } from "../modules/movie/movie.model";
-import { TheaterModel } from "../modules/theater/theater.model";
-import { ShowModel } from "../modules/show/show.model";
+import { MovieModel } from "../modules/movie/movie.models";
+import { TheaterModel } from "../modules/theatre/theatre.models";
+import { ShowModel } from "../modules/show/show.models";
 import { config } from "../config/config";
 import { generateSeatLayout } from "../utils/index"
 
@@ -35,22 +35,9 @@ const toDateWithTime = (baseDate: Date, timeStr: string) => {
 };
 
 export const seedShow = async () => {
-
-// NOTE:
-// First seed your movies and then theaters.
-// After that, select any two movies for which you want to create shows
-// and paste their IDs in the movieIds array below.
-// Also, pass your current state (e.g., "West Bengal") to filter theatres.
-// This setup is only for testing purposes to avoid creating shows for all movies.
-
-// Otherwise, you can also do the things below commented if you want to create shows for all movies and states
-//  const movies = await MovieModel.find({});
-//  const theatres = await TheaterModel.find({});
-
-  
-  const movieIds = ["68e224451aeabaafaa43ac58", "68e224451aeabaafaa43ac57"];
-  const movies = await MovieModel.find({ _id: { $in: movieIds } });
-  const theatres = await TheaterModel.find({ state: "West Bengal" });
+  // const movieIds = ["69b175f1c6348a9ed819baf6", "69b175f1c6348a9ed819baf7"];
+  const movies = await MovieModel.find();
+  const theatres = await TheaterModel.find();
 
   if (!movies.length || !theatres.length) {
     console.error("Movies or theatres not found. Please check IDs or state name.");
@@ -96,7 +83,7 @@ export const seedShow = async () => {
 };
 
 mongoose
-  .connect(config.databaseUrl as string)
+  .connect(config.databaseReplicaSet as string)
   .then(async () => {
     console.log("DB connected");
     await ShowModel.deleteMany({});
